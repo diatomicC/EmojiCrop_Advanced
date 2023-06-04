@@ -1,0 +1,87 @@
+/* style.css */
+@font-face {
+  font-family: 'SBAggroB';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SBAggroB.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+* {
+  font-family: 'SBAggroB';
+}
+
+p{
+  text-align: center;
+}
+body {
+  background-color: #fff;
+  font-family: 'Roboto', sans-serif;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: #7c74db;
+  text-align: center;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  font: bold;
+}
+
+#drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  padding: 2rem;
+  border: 2px dashed #7c74db;
+  border-radius: 5px;
+  width: 80%;
+  max-width: 600px;
+}
+
+button {
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+}
+
+#upload-btn {
+  background-color: #fecb42;
+  color: #000000;
+  border: none;
+}
+
+.title-btn {
+  background-color: #7c74db;
+  color: #fff;
+  border: none;
+}
+
+button:focus {
+  outline: none;
+}
+
+button:hover {
+  opacity: 0.5;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Bootstrap button classes for other buttons */
+#kakao-btn,
+#naver-btn,
+#kakao-btn2,
+#naver-btn2 {
+  background-color: #6c757d;
+  border: none;
+  color: #fff;
+}
