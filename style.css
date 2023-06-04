@@ -86,3 +86,42 @@ button:active {
   border: none;
   color: #fff;
 }
+
+h2{
+  text-align: center;
+  margin-top: 2rem;
+
+}
+
+#new-buttons {
+  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  padding: 2rem;
+  width: 80%;
+}
+
+#new-buttons .application-btn {
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-right: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  background-color: #7c74db;
+  color: #fff;
+  border: none;
+}
+
+#new-buttons .application-btn:hover {
+  opacity: 0.5;
+}
+
+#new-buttons .application-btn:active {
+  transform: scale(0.98);
+}
+
+#new-buttons .application-btn:focus {
+  outline: none;
+}
