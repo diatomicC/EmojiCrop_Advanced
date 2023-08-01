@@ -236,7 +236,7 @@ function handleFileDrop(files) {
     });
 
     // 왓스티커 버튼 클릭 시
-  document.querySelector("#kakao-btn").addEventListener("click", function () {
+  document.querySelector("#what-btn").addEventListener("click", function () {
     // 파일 나누기
     let slices = [];
     for (let i = 0; i < files.length; i++) {
