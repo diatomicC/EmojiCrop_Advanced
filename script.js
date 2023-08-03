@@ -277,5 +277,47 @@ function handleFileDrop(files) {
       };
     }
   });
-
+  
+    // 인스타툰 버튼 클릭 시
+    document.querySelector("#instatoon-btn").addEventListener("click", function () {
+      // 파일 나누기
+      let slices = [];
+      for (let i = 0; i < files.length; i++) {
+        let file = files[i];
+        let img = document.createElement("img");
+        img.src = URL.createObjectURL(file);
+        img.onload = function () {
+          let canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          let ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+          
+          let sliceWidth = img.width / 4;
+          let sliceHeight = img.height / 4;
+          
+          for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 4; j++) {
+              let sliceCanvas = document.createElement("canvas");
+              sliceCanvas.width = 1000;
+              sliceCanvas.height = 1000;
+              let sliceCtx = sliceCanvas.getContext("2d");
+              sliceCtx.drawImage(canvas, j * sliceWidth, i * sliceHeight, sliceWidth, sliceHeight, 0, 0, sliceCanvas.width, sliceCanvas.height);
+              slices.push(sliceCanvas.toDataURL("image/png"));
+            }
+          }
+          
+          if (slices.length == 16) {
+            // zip 파일 만들기
+            let zip = new JSZip();
+            for (let k = 0; k < slices.length; k++) {
+              zip.file((k + 1) + ".png", slices[k].split(",")[1], { base64: true });
+            }
+            zip.generateAsync({ type: "blob" }).then(function (blob) {
+              saveAs(blob, "instatoon_sticker.zip");
+            });
+          }
+        };
+      }
+    });
 }
