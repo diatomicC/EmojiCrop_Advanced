@@ -1,44 +1,251 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Emoji Converter</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <script type="text/javascript" src="//t1.daumcdn.net/kas/static/ba.min.js" async></script>
-  </head>
-  <body>
-    <h1>이모티콘 절단기 (업그레이드 버전)</h1>
-    <p>이모티콘 플랫폼에서 이모티콘 지원을 쉽게 하기 위해 편집을 해주는 사이트 입니다.</p>
+const uploadBtn = document.getElementById("upload-btn");
+const dropZone = document.getElementById("drop-zone");
+const fileListContainer = document.getElementById("file-list-container");
 
-    <div style="display: flex;">
-      <div id="drop-zone">
-        <button id="upload-btn">파일 업로드</button>
-        <div id="file-list-container"></div>
-        <button id="kakao-btn">카카오톡</button>
-        <button id="naver-btn">네이버 OGQ</button>
-        <button id="line-btn">라인 스티커 (Line)</button> <!--320 270-->
-        <button id="band-btn">네이버 밴드 (Band)</button> <!--370 320-->
-        <button id="what-btn">Wechat/Whatsapp</button> <!--512 512-->
-        <button id="instatoon-btn">인스타툰</button> <!--1000 1000-->
+// Store currently selected files
+let currentFiles = [];
 
-        <button class="title-btn" onclick="window.open('https://www.notion.so/e9223ceafc4f40bb8b92fd6700718d09')">사용설명서</button>
-        <button class="title-btn" onclick="window.open('https://www.instagram.com/diatomicarbon/')">만든 사람</button>
-      </div>
-    </div>
-    <h2>이모티콘 지원 사이트</h2>
-    <div style="display: flex;">
-      <div id="new-buttons">
-        <button class="application-btn" onclick="window.open('https://emoticonstudio.kakao.com/')">카카오톡</button>
-        <button class="application-btn"onclick="window.open('https://ogqmarket.naver.com/')">네이버 OGQ</button>
-        <button class="application-btn" onclick="window.open('https://creator.line.me/ko/')">라인 스티커</button>
-        <button class="application-btn"onclick="window.open('https://partners.band.us/partners/sticker)">네이버 밴드</button>
-        <button class="application-btn" onclick="window.open('https://whatsticker.online/')">WhatSticker</button>
-      </div>
-    </div>
+// File upload functionality
+uploadBtn.addEventListener("click", () => {
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/*";
+  fileInput.multiple = true;
+  fileInput.onchange = () => {
+    handleFileDrop(fileInput.files);
+  };
+  fileInput.click();
+});
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <script src="script.js"></script>
-  </body>
-</html>
+// Drag and drop functionality
+dropZone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  dropZone.classList.add("dragover");
+});
+
+dropZone.addEventListener("dragleave", () => {
+  dropZone.classList.remove("dragover");
+});
+
+dropZone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropZone.classList.remove("dragover");
+  handleFileDrop(e.dataTransfer.files);
+});
+
+// Display uploaded files
+function displayFiles(files) {
+  fileListContainer.innerHTML = "";
+  if (files.length === 0) {
+    return;
+  }
+  
+  const title = document.createElement("div");
+  title.textContent = `업로드된 파일 (${files.length}개)`;
+  title.style.fontWeight = "bold";
+  title.style.marginBottom = "0.5rem";
+  fileListContainer.appendChild(title);
+  
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const fileItem = document.createElement("div");
+    fileItem.className = "file-item";
+    
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(file);
+    img.alt = file.name;
+    
+    const fileName = document.createElement("span");
+    fileName.textContent = file.name;
+    
+    fileItem.appendChild(img);
+    fileItem.appendChild(fileName);
+    fileListContainer.appendChild(fileItem);
+  }
+}
+
+// Handle file drop
+function handleFileDrop(files) {
+  currentFiles = Array.from(files);
+  displayFiles(currentFiles);
+}
+
+// Process single file and return promise
+function processFile(file, config) {
+  return new Promise((resolve) => {
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(file);
+    img.onload = function () {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+      
+      const sliceWidth = img.width / 4;
+      const sliceHeight = img.height / 4;
+      const slices = [];
+      
+      for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+          const sliceCanvas = document.createElement("canvas");
+          sliceCanvas.width = config.width;
+          sliceCanvas.height = config.height;
+          const sliceCtx = sliceCanvas.getContext("2d");
+          
+          if (config.addPadding) {
+            // Add transparent padding
+            sliceCtx.fillStyle = "rgba(0, 0, 0, 0)";
+            sliceCtx.fillRect(0, 0, config.paddingLeft, config.height);
+            sliceCtx.fillRect(config.width - config.paddingRight, 0, config.paddingRight, config.height);
+            sliceCtx.drawImage(
+              canvas,
+              j * sliceWidth,
+              i * sliceHeight,
+              sliceWidth,
+              sliceHeight,
+              config.paddingLeft,
+              0,
+              config.drawWidth,
+              config.drawHeight
+            );
+          } else {
+            sliceCtx.drawImage(
+              canvas,
+              j * sliceWidth,
+              i * sliceHeight,
+              sliceWidth,
+              sliceHeight,
+              0,
+              0,
+              sliceCanvas.width,
+              sliceCanvas.height
+            );
+          }
+          slices.push(sliceCanvas.toDataURL("image/png"));
+        }
+      }
+      
+      // Add full canvas if needed
+      if (config.addFullCanvas) {
+        const fullCanvas = document.createElement("canvas");
+        fullCanvas.width = config.width;
+        fullCanvas.height = config.height;
+        const fullCtx = fullCanvas.getContext("2d");
+        if (config.addPadding) {
+          fullCtx.fillStyle = "rgba(0, 0, 0, 0)";
+          fullCtx.fillRect(0, 0, config.paddingLeft, config.height);
+          fullCtx.fillRect(config.width - config.paddingRight, 0, config.paddingRight, config.height);
+          fullCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height, config.paddingLeft, 0, config.drawWidth, config.drawHeight);
+        } else {
+          fullCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, fullCanvas.width, fullCanvas.height);
+        }
+        slices.push(fullCanvas.toDataURL("image/png"));
+      }
+      
+      resolve(slices);
+    };
+  });
+}
+
+// Process all files and create zip
+async function processAllFiles(files, config, zipFileName) {
+  const allSlices = [];
+  
+  // Process all files
+  const promises = Array.from(files).map((file, fileIndex) => {
+    return processFile(file, config).then((slices) => {
+      // Add file index prefix to slice names
+      return slices.map((slice, sliceIndex) => ({
+        data: slice,
+        name: `file${fileIndex + 1}_${sliceIndex + 1}.png`
+      }));
+    });
+  });
+  
+  const results = await Promise.all(promises);
+  
+  // Flatten all slices
+  results.forEach((fileSlices) => {
+    allSlices.push(...fileSlices);
+  });
+  
+  // Create zip file
+  const zip = new JSZip();
+  allSlices.forEach((slice) => {
+    zip.file(slice.name, slice.data.split(",")[1], { base64: true });
+  });
+  
+  const blob = await zip.generateAsync({ type: "blob" });
+  saveAs(blob, zipFileName);
+}
+
+// Button configurations
+const buttonConfigs = {
+  "kakao-btn": {
+    width: 360,
+    height: 360,
+    addPadding: false,
+    addFullCanvas: false,
+    zipFileName: "kakaotalk_sticker.zip"
+  },
+  "naver-btn": {
+    width: 740,
+    height: 640,
+    addPadding: true,
+    paddingLeft: 50,
+    paddingRight: 50,
+    drawWidth: 640,
+    drawHeight: 640,
+    addFullCanvas: true,
+    zipFileName: "OGQ_sticker.zip"
+  },
+  "line-btn": {
+    width: 320,
+    height: 270,
+    addPadding: true,
+    paddingLeft: 25,
+    paddingRight: 25,
+    drawWidth: 270,
+    drawHeight: 270,
+    addFullCanvas: true,
+    zipFileName: "line_sticker.zip"
+  },
+  "band-btn": {
+    width: 370,
+    height: 320,
+    addPadding: true,
+    paddingLeft: 25,
+    paddingRight: 25,
+    drawWidth: 320,
+    drawHeight: 320,
+    addFullCanvas: true,
+    zipFileName: "naver_band_sticker.zip"
+  },
+  "what-btn": {
+    width: 512,
+    height: 512,
+    addPadding: false,
+    addFullCanvas: false,
+    zipFileName: "Whatsticker_sticker.zip"
+  },
+  "instatoon-btn": {
+    width: 1000,
+    height: 1000,
+    addPadding: false,
+    addFullCanvas: false,
+    zipFileName: "instatoon_sticker.zip"
+  }
+};
+
+// Register button click events (only once)
+Object.keys(buttonConfigs).forEach((buttonId) => {
+  document.querySelector(`#${buttonId}`).addEventListener("click", function () {
+    if (currentFiles.length === 0) {
+      alert("먼저 파일을 업로드해주세요.");
+      return;
+    }
+    const config = buttonConfigs[buttonId];
+    processAllFiles(currentFiles, config, config.zipFileName);
+  });
+});
